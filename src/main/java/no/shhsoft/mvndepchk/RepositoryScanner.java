@@ -61,7 +61,13 @@ public final class RepositoryScanner {
         if (version.getParts().length == 0) {
             return true;
         }
-        if ("commons-codec".equals(dependency.getGroupId()) && "commons-codec".equals(dependency.getArtifactId())) {
+        final String groupId = dependency.getGroupId();
+        final String artifactId = dependency.getArtifactId();
+        if ("commons-codec".equals(groupId) && "commons-codec".equals(artifactId)
+            || "commons-httpclient".equals(groupId) && "commons-httpclient".equals(artifactId)
+            || "antlr".equals(groupId) && "antlr".equals(artifactId)
+            || "asm".equals(groupId)
+        ) {
             return new VersionComparator().compare(version, Version.fromString("2000")) < 0;
         }
         return false;
