@@ -1,7 +1,6 @@
 package no.shhsoft.mvndepchk;
 
 import no.shhsoft.utils.RegexCache;
-import no.shhsoft.utils.RegexUtils;
 import no.shhsoft.utils.StringUtils;
 import no.shhsoft.web.utils.HttpFetcher;
 import no.shhsoft.web.utils.UnexpectedHttpStatusCodeException;

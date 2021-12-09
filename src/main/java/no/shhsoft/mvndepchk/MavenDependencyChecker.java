@@ -11,6 +11,7 @@ import org.w3c.dom.NodeList;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -67,12 +68,16 @@ public final class MavenDependencyChecker {
             for (final Element dependencyElement : getChildElements(dependencyNode)) {
                 final String name = dependencyElement.getNodeName().trim();
                 final String value = expandProperties(dependencyElement.getTextContent().trim(), properties);
-                if ("groupId".equals(name)) {
-                    groupId = value;
-                } else if ("artifactId".equals(name)) {
-                    artifactId = value;
-                } else if ("version".equals(name)) {
-                    version = Version.fromString(value);
+                switch (name) {
+                    case "groupId":
+                        groupId = value;
+                        break;
+                    case "artifactId":
+                        artifactId = value;
+                        break;
+                    case "version":
+                        version = Version.fromString(value);
+                        break;
                 }
             }
             if (groupId != null && artifactId != null && version != null) {
@@ -99,6 +104,9 @@ public final class MavenDependencyChecker {
         for (int repositoriesIndex = 0; repositoriesIndex < repositoryNodes.getLength(); repositoriesIndex++) {
             final Element repositoryNode = (Element) repositoryNodes.item(repositoriesIndex);
             final String url = XmlUtils.findElement(repositoryNode, "url").getTextContent().trim();
+            if (!url.toLowerCase(Locale.ROOT).startsWith("http")) {
+                continue;
+            }
             repositories.add(expandProperties(url, properties));
         }
         return repositories;
