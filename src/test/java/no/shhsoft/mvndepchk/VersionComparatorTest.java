@@ -19,6 +19,7 @@ public final class VersionComparatorTest {
         Assert.assertTrue(compare("1.0.v0", "1.0.0") == 0);
         Assert.assertTrue(compare("1.0.0-foo", "1.0.0") == 0);
         Assert.assertTrue(compare("1.0.0-foo", "1.0.0-bar") == 0);
+        Assert.assertTrue(compare("1.9", "1.14") > 0);
     }
 
     private int compare(final String v1, final String v2) {

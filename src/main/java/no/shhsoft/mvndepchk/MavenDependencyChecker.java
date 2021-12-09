@@ -29,6 +29,7 @@ public final class MavenDependencyChecker {
         final StringBuilder sb = new StringBuilder();
         for (final Dependency dependency : dependencies) {
             final List<Version> availableVersions = repositoryScanner.getAvailableVersions(dependency);
+            final List<Version> versionCandidates = new ArrayList<>();
             for (final Version version : availableVersions) {
                 if (new VersionComparator().compare(dependency.getVersion(), version) <= 0) {
                     continue;
@@ -36,7 +37,11 @@ public final class MavenDependencyChecker {
                 if (!dependency.getVersion().isCompatible(version)) {
                     continue;
                 }
-                sb.append("  ").append(dependency).append(" -> ").append(version).append("\r\n");
+                versionCandidates.add(version);
+            }
+            versionCandidates.sort(new VersionComparator());
+            if (versionCandidates.size() > 0) {
+                sb.append("  ").append(dependency).append(" -> ").append(versionCandidates.get(0)).append("\r\n");
             }
         }
         if (sb.length() > 0) {

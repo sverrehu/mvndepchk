@@ -1,12 +1,13 @@
 package no.shhsoft.mvndepchk;
 
-import no.shhsoft.utils.RegexCache;
 import no.shhsoft.utils.StringUtils;
 import no.shhsoft.web.utils.HttpFetcher;
 import no.shhsoft.web.utils.UnexpectedHttpStatusCodeException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author <a href="mailto:shh@thathost.com">Sverre H. Huseby</a>
@@ -33,10 +34,11 @@ public final class RepositoryScanner {
         final String urlToDependency = getUrlToDependency(dependency, repositoryUrl);
         try {
             String content = StringUtils.newStringUtf8(HttpFetcher.get(urlToDependency));
-            content = StringUtils.remove(content, '\n');
-            final String[] matches = RegexCache.getMatchGroups(".*<a href=\"([0-9][^\"]*)/\".*", content);
-            for (final String match : matches) {
-                versions.add(Version.fromString(match));
+            final List<Version> newVersions = getAllVersions(content);
+            for (final Version version : newVersions) {
+                if (!skipVersion(dependency, version)) {
+                    versions.add(version);
+                }
             }
         } catch (final UnexpectedHttpStatusCodeException e) {
             if (e.getStatusCode() == 404) {
@@ -44,6 +46,25 @@ public final class RepositoryScanner {
             }
             throw e;
         }
+    }
+
+    List<Version> getAllVersions(final String content) {
+        final List<Version> allVersions = new ArrayList<>();
+        final Matcher matcher = Pattern.compile("<a href=\"([0-9][^\"]*)/\"").matcher(content);
+        while (matcher.find()) {
+            allVersions.add(Version.fromString(matcher.group(1)));
+        }
+        return allVersions;
+    }
+
+    private boolean skipVersion(final Dependency dependency, final Version version) {
+        if (version.getParts().length == 0) {
+            return true;
+        }
+        if ("commons-codec".equals(dependency.getGroupId()) && "commons-codec".equals(dependency.getArtifactId())) {
+            return new VersionComparator().compare(version, Version.fromString("2000")) < 0;
+        }
+        return false;
     }
 
     private String getUrlToDependency(final Dependency dependency, final String repositoryUrl) {
