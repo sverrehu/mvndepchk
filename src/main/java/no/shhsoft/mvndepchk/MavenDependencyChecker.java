@@ -20,7 +20,12 @@ import java.util.Map;
 public final class MavenDependencyChecker {
 
     private void checkUpdates(final String pomFile) {
-        final Document doc = XmlUtils.parse(IoUtils.readFile(pomFile));
+        final byte[] xmlRawBytes = IoUtils.readFile(pomFile);
+        if (xmlRawBytes == null) {
+            System.err.println("Skipping non-existing file " + pomFile);
+            return;
+        }
+        final Document doc = XmlUtils.parse(xmlRawBytes);
         final Map<String, String> properties = getProperties(doc);
         final List<String> repositoryUrls = getRepositories(doc, properties);
         final List<Dependency> dependencies = getDependencies(doc, properties);
