@@ -92,6 +92,8 @@ public final class MavenDependencyChecker {
             }
             if (groupId != null && artifactId != null && version != null) {
                 dependencies.add(new Dependency(tagName, groupId, artifactId, version));
+            } else if (artifactId != null) {
+                System.err.println("Warning: Artifact \"" + artifactId + "\" lacks group or version. Skipping.");
             }
         }
     }
