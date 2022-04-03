@@ -46,7 +46,18 @@ public final class MavenDependencyChecker {
             }
             versionCandidates.sort(new VersionComparator());
             if (versionCandidates.size() > 0) {
-                sb.append("  ").append(dependency).append(" -> ").append(versionCandidates.get(0)).append("\r\n");
+                final Version firstCandidate = versionCandidates.get(0);
+                int prevMajorVersion = firstCandidate.getMajorVersion();
+                sb.append("  ").append(dependency).append(" -> ").append(firstCandidate);
+                for (int q = 1; q < versionCandidates.size(); q++) {
+                    final Version versionCandidate = versionCandidates.get(q);
+                    final int majorVersion = versionCandidate.getMajorVersion();
+                    if (majorVersion != prevMajorVersion) {
+                        sb.append(", ").append(versionCandidate);
+                        prevMajorVersion = majorVersion;
+                    }
+                }
+                sb.append("\r\n");
             }
         }
         if (sb.length() > 0) {

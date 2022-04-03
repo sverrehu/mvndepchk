@@ -49,6 +49,14 @@ public final class Version {
         return compatibility == null && other.compatibility == null || compatibility != null && compatibility.equals(other.compatibility);
     }
 
+    public int getMajorVersion() {
+        try {
+            return Integer.valueOf(parts[0]);
+        } catch (final Exception e) {
+            return -1;
+        }
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
