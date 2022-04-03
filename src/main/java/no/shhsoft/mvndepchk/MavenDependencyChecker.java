@@ -19,7 +19,7 @@ import java.util.Map;
  */
 public final class MavenDependencyChecker {
 
-    private void checkUpdates(final String pomFile) {
+    private void checkUpdates(final String pomFile, final boolean isRootPom) {
         final byte[] xmlRawBytes = IoUtils.readFile(pomFile);
         if (xmlRawBytes == null) {
             System.err.println("Skipping non-existing file " + pomFile);
@@ -28,7 +28,7 @@ public final class MavenDependencyChecker {
         final Document doc = XmlUtils.parse(xmlRawBytes);
         final Map<String, String> properties = getProperties(doc);
         final List<String> repositoryUrls = getRepositories(doc, properties);
-        final List<Dependency> dependencies = getDependencies(doc, properties);
+        final List<Dependency> dependencies = getDependencies(doc, properties, isRootPom);
         final List<String> modules = getModules(doc, properties);
         final RepositoryScanner repositoryScanner = new RepositoryScanner(repositoryUrls);
         final StringBuilder sb = new StringBuilder();
@@ -68,18 +68,18 @@ public final class MavenDependencyChecker {
             final int lastSlashIndex = pomFile.lastIndexOf('/');
             final String dir = pomFile.substring(0, lastSlashIndex + 1);
             final String modulePomFile = dir + module + "/pom.xml";
-            checkUpdates(modulePomFile);
+            checkUpdates(modulePomFile, false);
         }
     }
 
-    private List<Dependency> getDependencies(final Document doc, final Map<String, String> properties) {
+    private List<Dependency> getDependencies(final Document doc, final Map<String, String> properties, final boolean isRootPom) {
         final List<Dependency> dependencies = new ArrayList<>();
-        addDependencies(dependencies, doc, properties, "dependency");
-        addDependencies(dependencies, doc, properties, "plugin");
+        addDependencies(dependencies, doc, properties, "dependency", isRootPom);
+        addDependencies(dependencies, doc, properties, "plugin", isRootPom);
         return dependencies;
     }
 
-    private void addDependencies(final List<Dependency> dependencies, final Document doc, final Map<String, String> properties, final String tagName) {
+    private void addDependencies(final List<Dependency> dependencies, final Document doc, final Map<String, String> properties, final String tagName, final boolean isRootPom) {
         final NodeList dependencyNodes = doc.getElementsByTagName(tagName);
         for (int dependenciesIndex = 0; dependenciesIndex < dependencyNodes.getLength(); dependenciesIndex++) {
             final Node dependencyNode = dependencyNodes.item(dependenciesIndex);
@@ -103,7 +103,7 @@ public final class MavenDependencyChecker {
             }
             if (groupId != null && artifactId != null && version != null) {
                 dependencies.add(new Dependency(tagName, groupId, artifactId, version));
-            } else if (artifactId != null) {
+            } else if (artifactId != null && isRootPom) {
                 System.err.println("Warning: Artifact \"" + artifactId + "\" lacks group or version. Skipping.");
             }
         }
@@ -179,7 +179,7 @@ public final class MavenDependencyChecker {
             return;
         }
         for (final String arg : args) {
-            new MavenDependencyChecker().checkUpdates(arg);
+            new MavenDependencyChecker().checkUpdates(arg, true);
         }
     }
 
