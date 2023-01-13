@@ -33,7 +33,7 @@ public final class RepositoryScanner {
     private void addVersions(final List<Version> versions, final Dependency dependency, final String repositoryUrl) {
         final String urlToDependency = getUrlToDependency(dependency, repositoryUrl);
         try {
-            String content = CachingHttpFetcher.get(urlToDependency);
+            final String content = CachingHttpFetcher.get(urlToDependency);
             final List<Version> newVersions = getAllVersions(content);
             for (final Version version : newVersions) {
                 if (!skipVersion(dependency, version)) {
