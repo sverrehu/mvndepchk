@@ -44,6 +44,10 @@ public final class RepositoryScanner {
             if (e.getStatusCode() == 404) {
                 return;
             }
+            if (e.getStatusCode() == 401) {
+                System.err.println("Warning: Repository \"" + repositoryUrl + "\" returned 401. Skipping.");
+                return;
+            }
             throw e;
         }
     }
